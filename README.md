@@ -1,6 +1,6 @@
 # Sharpy MCP server
 
-The local MCP server inside [Sharpy](https://getsharpy.com), the AI to-do list for Mac. Claude Code, Codex, Cursor, Claude and the ChatGPT desktop app read your to-do list, suggest tasks for it and mark them done. They can also search what you worked on and the follow-ups Sharpy found in your chats, mail and calls.
+The local MCP server inside [Sharpy](https://getsharpy.com), the AI to-do list for Mac. Claude Code, Codex, Cursor, Claude and the ChatGPT desktop app read your to-do list, suggest tasks for it and mark them done. They can also search what you worked on and your calls.
 
 Not to be confused with Sharphy (a .NET diagnostics MCP server) or with the `sharpy-mcp` of the sharpy.live video editor. This is the server of Sharpy, the AI to-do list for Mac at getsharpy.com.
 
