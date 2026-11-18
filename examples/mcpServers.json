@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "sharpy": {
+      "command": "/Applications/Sharpy.app/Contents/Helpers/sharpy-mcp"
+    }
+  }
+}

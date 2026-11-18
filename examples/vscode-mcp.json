@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "sharpy": {
+      "type": "stdio",
+      "command": "/Applications/Sharpy.app/Contents/Helpers/sharpy-mcp"
+    }
+  }
+}
