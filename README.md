@@ -2,6 +2,8 @@
 
 The local MCP server inside [Sharpy](https://getsharpy.com), the AI to-do list for Mac. Claude Code, Codex, Cursor, Claude and the ChatGPT desktop app read your to-do list, add tasks and mark them done. They can also search what you worked on and the follow-ups Sharpy found in your chats, mail and calls.
 
+Not to be confused with Sharphy (a .NET diagnostics MCP server) or with the `sharpy-mcp` of the sharpy.live video editor. This is the server of Sharpy, the AI to-do list for Mac at getsharpy.com.
+
 This repository holds the setup docs and example configs. The server itself ships inside the Sharpy app, so there is nothing here to build or install.
 
 - Runs on your Mac, over stdio. Nothing to host.
@@ -123,7 +125,9 @@ The server runs on your Mac and answers from the local database under `~/Library
 
 **Can I use it from chatgpt.com in a browser?** No. Browser connectors run on OpenAI's servers, which can't reach your Mac. Use the ChatGPT desktop app, which reads Codex's config.
 
-**Is this the same Sharpy as sharpy.live?** No. This Sharpy is the AI to-do list for Mac at [getsharpy.com](https://getsharpy.com), made by SharpyHQ. sharpy.live is an unrelated AI video editor.
+**Is this the same Sharpy as sharpy.live?** No. This Sharpy is the AI to-do list for Mac at [getsharpy.com](https://getsharpy.com), made by SharpyHQ. sharpy.live is an unrelated AI video editor with its own MCP server of the same name.
+
+**Is this Sharphy?** No. Sharphy is a separate .NET diagnostics MCP server.
 
 **Do Todoist and Linear tasks show up?** Connect Todoist and Linear in Sharpy, and their tasks are on the same list your agent reads.
 
