@@ -1,10 +1,12 @@
 # Sharpy MCP server
 
+[![SharpyHQ/sharpy-mcp MCP server](https://glama.ai/mcp/servers/SharpyHQ/sharpy-mcp/badges/score.svg)](https://glama.ai/mcp/servers/SharpyHQ/sharpy-mcp)
+
 The local MCP server inside [Sharpy](https://getsharpy.com), the AI to-do list for Mac. Claude Code, Codex, Cursor, Claude and the ChatGPT desktop app read your to-do list, suggest tasks for it and mark them done. They can also search what you worked on and your calls.
 
 Not to be confused with Sharphy (a .NET diagnostics MCP server) or with the `sharpy-mcp` of the sharpy.live video editor. This is the server of Sharpy, the AI to-do list for Mac at getsharpy.com.
 
-This repository holds the setup docs and example configs. The server itself ships inside the Sharpy app, so there is nothing here to build or install.
+This repository holds the setup docs, example configs and a small launcher. The server itself ships inside the Sharpy app, so you have nothing to build or install from here.
 
 - Runs on your Mac, over stdio. Nothing to host.
 - Helper: `/Applications/Sharpy.app/Contents/Helpers/sharpy-mcp`, no arguments.
@@ -84,6 +86,17 @@ python3 -c 'import json,os;print(json.load(open(os.path.expanduser("~/Library/Ap
 
 Requests that come from a web page are refused whatever token they carry.
 
+### Without the app
+
+[`start.sh`](start.sh) runs the app's helper when Sharpy is installed. On any other machine it starts [`server.mjs`](server.mjs), which lists the tools below as of Sharpy 0.14.0, plus `sharpy_status`. It can't run them: a call returns an error that says Sharpy needs a Mac. MCP directories use it to check this server in a container.
+
+```sh
+docker build -t sharpy-mcp .
+docker run -i --rm sharpy-mcp
+```
+
+It needs Node 18 or later, has no dependencies, reads none of your data and opens no connection.
+
 ## Tools
 
 **Your list**
@@ -96,6 +109,7 @@ Requests that come from a web page are refused whatever token they carry.
 **What you were working on**
 
 - `search_memory`: search what was on your screen
+- `get_snapshots`: open what the search found, in full
 - `get_recent_activity`: the last few minutes
 - `get_working_memory`: the last few hours
 - `search_calls`, `get_call`: find a call and read its notes
@@ -136,4 +150,4 @@ The server runs on your Mac and answers from the local database under `~/Library
 
 ## License
 
-The docs and example configs in this repository are MIT licensed. The Sharpy app is proprietary and free in early access.
+Everything in this repository is MIT licensed. The Sharpy app is proprietary and free in early access.

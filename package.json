@@ -1,0 +1,19 @@
+{
+  "name": "@sharpyhq/sharpy-mcp",
+  "version": "0.14.0",
+  "private": true,
+  "description": "Sharpy's local MCP server: starts the helper inside Sharpy for Mac, or lists its tools where the app isn't installed.",
+  "license": "MIT",
+  "homepage": "https://getsharpy.com/mcp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SharpyHQ/sharpy-mcp.git"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "sh start.sh"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
