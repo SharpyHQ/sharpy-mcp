@@ -1,0 +1,447 @@
+[
+  {
+    "name": "sharpy_status",
+    "description": "Use when Sharpy's other tools fail: says whether Sharpy is reachable from here and what to do if it is not. Reads nothing and changes nothing.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "list_work",
+    "description": "The user's task list and its current state. Returns state, day and title. Tasks may be inferred or added by the user. Explain origins only from returned supporting text and source references; when absent, say the origin is unknown. Ranking reasons are not original source words. \"today\" is the current list; \"all\" includes Later.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "default": 50,
+          "description": "Maximum items returned.",
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "scope": {
+          "default": "today",
+          "description": "\"today\" for what is due or planned today; \"all\" for the whole list.",
+          "enum": [
+            "today",
+            "all"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "add_work_item",
+    "description": "Put tasks on the user's list when they ask for them: \"add …\", \"put it on my list\", \"I need to … tomorrow\", a list of things to do. One call for all of them, `items` in the order given; a title is the thing to do, in their words. Never for work you are about to do yourself. Returns each task's id and title.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "day": {
+          "description": "For `title`: the local day, yyyy-MM-dd.",
+          "type": "string"
+        },
+        "items": {
+          "description": "The tasks, one object each.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "day": {
+                "description": "The local day it belongs to, yyyy-MM-dd. Omit for someday.",
+                "type": "string"
+              },
+              "links": {
+                "description": "https links to the item in its app — the email, issue, message.",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 0,
+                "type": "array"
+              },
+              "snapshot_ids": {
+                "description": "Snapshots this answer opened that the task is about.",
+                "items": {
+                  "type": "integer"
+                },
+                "minItems": 0,
+                "type": "array"
+              },
+              "title": {
+                "description": "What to do, in the user's own words where possible.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "title"
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "title": {
+          "description": "One task, instead of `items`.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "update_work_item",
+    "description": "Change tasks on the user's list — one, or many in one call (`ids`, or `match` for every task whose title has those words). Ids come from list_work; never guess one. Only \"done\" says a task is finished, and only when you know it is. Returns the changed tasks; \"reopen\" brings one back.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "day": {
+          "description": "For verb day: yyyy-MM-dd.",
+          "type": "string"
+        },
+        "id": {
+          "description": "One task's id, instead of `ids`.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "ids": {
+          "description": "The tasks' ids, from list_work in this answer.",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "match": {
+          "description": "Instead of ids: words every task's title has — \"Zorblat\" for all the Zorblat tasks.",
+          "type": "string"
+        },
+        "minutes": {
+          "default": 1440,
+          "description": "For later: how long to stay quiet. A day by default.",
+          "maximum": 525600,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "title": {
+          "description": "For verb rename: the new title. For merge: one title for both, if the user gave one.",
+          "type": "string"
+        },
+        "verb": {
+          "description": "done: finished. drop: no longer needed. not_a_task: should never have been on the list. later: out of sight for `minutes`. today / tomorrow / next_week / next_month / day: on that day's list (`day` is yyyy-MM-dd), out of sight until it starts. someday: Later with no date, off the list until they bring it back. rename: one task, to `title`. reopen: back on the list. undo: takes back the last change made here, within ten minutes — no ids. merge: two tasks that are the same work, the one that stays first in `ids` — the second is folded into it with its notes and sources; `title` only when the user gave or accepted one for both.",
+          "enum": [
+            "done",
+            "drop",
+            "not_a_task",
+            "later",
+            "today",
+            "tomorrow",
+            "next_week",
+            "next_month",
+            "someday",
+            "day",
+            "rename",
+            "reopen",
+            "undo",
+            "merge"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "verb"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "wait_for_list_change",
+    "description": "Wait until the user's list changes past since_rev, for at most timeout seconds (50 at most). Returns changed and list_rev, and with include_list the list itself (sharpy.list/1 JSON). Call it with since_rev 0 to learn the current rev; an MCP client may subscribe to the resource sharpy://list instead.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "include_list": {
+          "default": false,
+          "description": "Also return the list as it is now.",
+          "type": "boolean"
+        },
+        "since_rev": {
+          "description": "The list_rev you last saw; 0 answers at once with the current one.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeout": {
+          "default": 50,
+          "description": "Seconds to wait for a change.",
+          "maximum": 50,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "since_rev"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "search_memory",
+    "description": "Use to find where something appeared in the user's history: a phrase they read or wrote, a person's name, an error message, a file name, a decision. Returns the best-matching snapshots with a highlighted excerpt, ids, app, title, URL and time; open get_snapshots before quoting. Terms are ANDed; a trailing * is a prefix search.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "app": {
+          "description": "Restrict to one app bundle id, e.g. com.apple.Safari.",
+          "type": "string"
+        },
+        "domain": {
+          "description": "One web domain, e.g. github.com — exact match on the normalized domain.",
+          "type": "string"
+        },
+        "from": {
+          "description": "Earliest capture time. ISO 8601 (2026-09-06T09:30:00+02:00, or no offset for local time), a plain date (2026-09-06 — `from` its first moment, `to` its last), a span back from now (45m, 12h, 3d, 2w), or today, yesterday or now.",
+          "type": "string"
+        },
+        "limit": {
+          "default": 20,
+          "description": "Maximum hits returned.",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "query": {
+          "description": "Words to look for in snapshot text, window titles and URLs.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "to": {
+          "description": "Latest capture time. Same forms as `from`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_snapshots",
+    "description": "Use whenever a quote, number, date, URL, decision or message body is about to be stated: this is the only tool that returns untruncated snapshot text, and snapshots are the source of truth everything else is summarized from. Takes ids from the other tools and returns each full record: text, app, title, URL, domain, time, duration, session id.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "ids": {
+          "description": "Snapshot ids, in the order you want them back.",
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "type": "array"
+        },
+        "query": {
+          "description": "Search words; a cut text keeps the window on them.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ids"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_recent_activity",
+    "description": "Use for \"what was I just doing?\" — the last few minutes of screen activity, newest first. Returns a row per snapshot — ids, local time, app, title, URL, seconds spent, a short excerpt; open get_snapshots before quoting.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "default": 50,
+          "description": "Maximum rows returned, newest first.",
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "minutes": {
+          "default": 30,
+          "description": "How far back to look. 30 covers the immediate past; a whole morning is 240.",
+          "maximum": 1440,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_working_memory",
+    "description": "Use for \"what have I been working on for the last few hours?\", and to load the user's current context before drafting or rewriting text in their voice. Returns those sessions newest first, each with the full text of its latest snapshot, and counts the rest as omitted_count.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "hours": {
+          "default": 3,
+          "description": "How far back the window reaches; 3 is what the app itself calls working memory.",
+          "maximum": 24,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "limit": {
+          "default": 50,
+          "description": "Most sessions returned, newest first. Older ones are counted in omitted_count.",
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "text": {
+          "default": true,
+          "description": "Send each session's latest text. false returns the index alone — app, title, URL, counts, text_chars — fits any client; open what you need with read_session.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "search_calls",
+    "description": "Use for questions about meetings and calls: what was said on a call, who was on one, when a call happened, or what was decided out loud. Returns a row per call — id, title, venue, start, length, roster — or recent calls with no query; then get_call, and get_snapshots before quoting.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Maximum calls returned.",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "query": {
+          "description": "Words spoken on the call. Omit to list recent calls instead of searching.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_call",
+    "description": "Use after search_calls to read one call: the roster, the summary if one was written, and the transcript turn by turn with who said it and when. Returns each turn with the snapshot id its words live in: open get_snapshots before quoting a turn, and never state an inferred name as fact.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "description": "The call's id, from search_calls.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "limit": {
+          "default": 300,
+          "description": "Maximum turns returned, oldest first.",
+          "maximum": 600,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "call_id"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "pause_capture",
+    "description": "Use when the user wants Sharpy to stop recording for a while — \"stop capturing\", \"pause for an hour\", \"I'm doing something private\". Stops capture until the chosen moment (or until resumed) and returns when it will come back; nothing captured before the pause is affected, and nothing is recorded while it holds. Requires confirmation: the first call returns a prompt to show the user, and only a repeat call with confirmed set actually pauses.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "duration": {
+          "default": "indefinite",
+          "description": "How long to stay paused: 15m, 1h, tomorrow (until local midnight), or indefinite (until the user resumes).",
+          "enum": [
+            "15m",
+            "1h",
+            "tomorrow",
+            "indefinite"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "resume_capture",
+    "description": "Use to start capturing again after a pause, including a pause that was set to last until tomorrow. Clears the pause immediately and returns nothing else; it does not recover anything that happened while capture was off, because that was never recorded. Requires confirmation.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    }
+  },
+  {
+    "name": "add_exclusion",
+    "description": "Use when the user wants an app, a website or a kind of window kept out of memory from now on — \"never record my banking app\", \"ignore anything with Payroll in the title\". Adds the rule and returns its id; from then on matching states are dropped before anything is written, so nothing new lands on disk. Forward-looking only: use delete_memory to remove what was already captured. Requires confirmation.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "description": "What the pattern matches: app (bundle id), domain (host, subdomains included), or title_pattern (substring of the window title).",
+          "enum": [
+            "app",
+            "domain",
+            "title_pattern"
+          ],
+          "type": "string"
+        },
+        "pattern": {
+          "description": "The bundle id, domain or title substring to exclude.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "pattern"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "list_exclusions",
+    "description": "Use before adding or removing an exclusion, and to answer \"what is Sharpy not recording?\". Returns every rule with its id, kind, pattern and whether it is built in; built-in rules are the privacy floor and only ones with builtin: false can be removed. Reads only, so no confirmation is needed.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    }
+  },
+  {
+    "name": "delete_memory",
+    "description": "Use when the user wants captured memory gone — \"delete everything from yesterday\", \"forget what you saw on that site\". Deletes the snapshots matching every filter given and marks everything derived from them stale; it is permanent and cannot be undone. At least one of from, to, app or domain is required, so an empty call cannot wipe the database by accident. Requires confirmation, and the prompt states how many snapshots the filters match, so read it back to the user before they approve.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "app": {
+          "description": "Restrict to one app bundle id, e.g. com.apple.Safari.",
+          "type": "string"
+        },
+        "domain": {
+          "description": "Restrict to one domain, e.g. github.com.",
+          "type": "string"
+        },
+        "from": {
+          "description": "Delete captures at or after this time. ISO 8601 (2026-09-06T09:30:00+02:00, or no offset for local time), a plain date (2026-09-06 — `from` its first moment, `to` its last), a span back from now (45m, 12h, 3d, 2w), or today, yesterday or now.",
+          "type": "string"
+        },
+        "to": {
+          "description": "Delete captures at or before this time. Same forms as `from`.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  }
+]
